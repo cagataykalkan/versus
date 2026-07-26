@@ -7,17 +7,50 @@ import UIKit
 
 enum SceneFactory {
 
-    static func makeSplashScene() -> SplashViewController {
-        let viewController = SplashViewController()
-        let interactor = SplashInteractor()
-        let presenter = SplashPresenter()
-        let router = SplashRouter()
+    static func makeLoginScene(onAuthenticated: @escaping () -> Void) -> LoginViewController {
+        let viewController = LoginViewController()
+        let interactor = LoginInteractor()
+        let presenter = LoginPresenter()
+        let router = LoginRouter()
 
         viewController.interactor = interactor
         viewController.router = router
         interactor.presenter = presenter
         presenter.viewController = viewController
         router.viewController = viewController
+        router.onAuthenticated = onAuthenticated
+
+        return viewController
+    }
+
+    static func makeSignUpScene(onAuthenticated: @escaping () -> Void) -> SignUpViewController {
+        let viewController = SignUpViewController()
+        let interactor = SignUpInteractor()
+        let presenter = SignUpPresenter()
+        let router = SignUpRouter()
+
+        viewController.interactor = interactor
+        viewController.router = router
+        interactor.presenter = presenter
+        presenter.viewController = viewController
+        router.viewController = viewController
+        router.onAuthenticated = onAuthenticated
+
+        return viewController
+    }
+
+    static func makeHomeScene(onSignOut: @escaping () -> Void) -> HomeViewController {
+        let viewController = HomeViewController()
+        let interactor = HomeInteractor()
+        let presenter = HomePresenter()
+        let router = HomeRouter()
+
+        viewController.interactor = interactor
+        viewController.router = router
+        interactor.presenter = presenter
+        presenter.viewController = viewController
+        router.viewController = viewController
+        router.onSignOut = onSignOut
 
         return viewController
     }

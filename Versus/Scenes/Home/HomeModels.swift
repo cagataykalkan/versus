@@ -1,20 +1,20 @@
 //
-//  SplashModels.swift
+//  HomeModels.swift
 //  Versus
 //
 
 import Foundation
 
-enum Splash {
-    enum Greeting {
+enum Home {
+    enum Load {
         struct Request {}
 
         struct Response {
-            let appName: String
+            let result: Result<AppUser, Error>
         }
 
         struct ViewModel {
-            let displayText: String
+            let welcomeText: String
         }
     }
 }
