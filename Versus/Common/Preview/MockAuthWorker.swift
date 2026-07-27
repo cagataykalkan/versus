@@ -22,6 +22,10 @@ final class MockAuthWorker: AuthWorkerProtocol {
         try result.get()
     }
 
+    func updateUsername(_ newUsername: String) async throws -> AppUser {
+        try result.get()
+    }
+
     func signOut() throws {}
 }
 #endif

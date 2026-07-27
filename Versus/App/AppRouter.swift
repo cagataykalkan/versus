@@ -17,18 +17,18 @@ final class AppRouter {
 
     private func makeRootViewController() -> UIViewController {
         if authWorker.currentUserId != nil {
-            return SceneFactory.makeHomeScene(onSignOut: { [weak self] in self?.showLogin() })
+            return SceneFactory.makeProfileScene(onSignOut: { [weak self] in self?.showLogin() })
         }
         return makeAuthNavigationController()
     }
 
     private func makeAuthNavigationController() -> UINavigationController {
-        let loginViewController = SceneFactory.makeLoginScene(onAuthenticated: { [weak self] in self?.showHome() })
+        let loginViewController = SceneFactory.makeLoginScene(onAuthenticated: { [weak self] in self?.showProfile() })
         return UINavigationController(rootViewController: loginViewController)
     }
 
-    private func showHome() {
-        window?.rootViewController = SceneFactory.makeHomeScene(onSignOut: { [weak self] in self?.showLogin() })
+    private func showProfile() {
+        window?.rootViewController = SceneFactory.makeProfileScene(onSignOut: { [weak self] in self?.showLogin() })
     }
 
     private func showLogin() {

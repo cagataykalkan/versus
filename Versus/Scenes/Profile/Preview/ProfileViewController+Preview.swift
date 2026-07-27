@@ -1,17 +1,17 @@
 //
-//  HomeViewController+Preview.swift
+//  ProfileViewController+Preview.swift
 //  Versus
 //
 
 #if DEBUG
 import SwiftUI
 
-#Preview("Home") {
+#Preview("Profile") {
     UIViewControllerPreview {
-        let viewController = HomeViewController()
-        let interactor = HomeInteractor()
-        let presenter = HomePresenter()
-        let router = HomeRouter()
+        let viewController = ProfileViewController()
+        let interactor = ProfileInteractor()
+        let presenter = ProfilePresenter()
+        let router = ProfileRouter()
 
         interactor.worker = MockAuthWorker()
 

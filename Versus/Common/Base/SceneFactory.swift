@@ -39,11 +39,11 @@ enum SceneFactory {
         return viewController
     }
 
-    static func makeHomeScene(onSignOut: @escaping () -> Void) -> HomeViewController {
-        let viewController = HomeViewController()
-        let interactor = HomeInteractor()
-        let presenter = HomePresenter()
-        let router = HomeRouter()
+    static func makeProfileScene(onSignOut: @escaping () -> Void) -> ProfileViewController {
+        let viewController = ProfileViewController()
+        let interactor = ProfileInteractor()
+        let presenter = ProfilePresenter()
+        let router = ProfileRouter()
 
         viewController.interactor = interactor
         viewController.router = router
