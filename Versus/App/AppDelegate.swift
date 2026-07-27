@@ -7,11 +7,16 @@
 
 import UIKit
 import FirebaseCore
+import FirebaseFirestore
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        #if DEBUG
+        FirebaseConfiguration.shared.setLoggerLevel(.debug)
+        Firestore.enableLogging(true)
+        #endif
         FirebaseApp.configure()
         return true
     }

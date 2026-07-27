@@ -14,6 +14,7 @@ final class FirebaseAuthWorker: AuthWorkerProtocol {
     }
 
     func signUp(email: String, password: String, username: String) async throws -> AppUser {
+        Log.request("AuthWorker.signUp email=\(email) username=\(username)")
         let usernameLower = username.lowercased()
 
         // The username-uniqueness write requires an authenticated request (see firestore.rules),
@@ -22,6 +23,7 @@ final class FirebaseAuthWorker: AuthWorkerProtocol {
         do {
             uid = try await Auth.auth().createUser(withEmail: email, password: password).user.uid
         } catch {
+            Log.response("AuthWorker.signUp failed at createUser: \(error.localizedDescription)")
             throw WorkerError.underlying(error.localizedDescription)
         }
 
@@ -29,6 +31,7 @@ final class FirebaseAuthWorker: AuthWorkerProtocol {
             let reserved = try await reserveUsername(usernameLower, for: uid)
             guard reserved else {
                 try? await Auth.auth().currentUser?.delete()
+                Log.response("AuthWorker.signUp failed: username \"\(username)\" already taken")
                 throw WorkerError.usernameTaken
             }
 
@@ -39,35 +42,49 @@ final class FirebaseAuthWorker: AuthWorkerProtocol {
                 "createdAt": FieldValue.serverTimestamp()
             ])
 
+            Log.response("AuthWorker.signUp succeeded uid=\(uid)")
             return AppUser(id: uid, username: username, email: email, photoURL: nil)
         } catch let error as WorkerError {
+            Log.response("AuthWorker.signUp failed: \(error.localizedDescription)")
             throw error
         } catch {
             try? await Auth.auth().currentUser?.delete()
+            Log.response("AuthWorker.signUp failed: \(error.localizedDescription)")
             throw WorkerError.underlying(error.localizedDescription)
         }
     }
 
     func signIn(email: String, password: String) async throws -> AppUser {
+        Log.request("AuthWorker.signIn email=\(email)")
         do {
             let result = try await Auth.auth().signIn(withEmail: email, password: password)
-            return try await fetchUser(uid: result.user.uid)
+            let user = try await fetchUser(uid: result.user.uid)
+            Log.response("AuthWorker.signIn succeeded uid=\(user.id) username=\(user.username)")
+            return user
         } catch let error as WorkerError {
+            Log.response("AuthWorker.signIn failed: \(error.localizedDescription)")
             throw error
         } catch {
+            Log.response("AuthWorker.signIn failed: \(error.localizedDescription)")
             throw WorkerError.underlying(error.localizedDescription)
         }
     }
 
     func fetchCurrentUser() async throws -> AppUser {
+        Log.request("AuthWorker.fetchCurrentUser")
         guard let uid = currentUserId else {
+            Log.response("AuthWorker.fetchCurrentUser failed: not authenticated")
             throw WorkerError.notAuthenticated
         }
-        return try await fetchUser(uid: uid)
+        let user = try await fetchUser(uid: uid)
+        Log.response("AuthWorker.fetchCurrentUser succeeded username=\(user.username)")
+        return user
     }
 
     func updateUsername(_ newUsername: String) async throws -> AppUser {
+        Log.request("AuthWorker.updateUsername newUsername=\(newUsername)")
         guard let uid = currentUserId else {
+            Log.response("AuthWorker.updateUsername failed: not authenticated")
             throw WorkerError.notAuthenticated
         }
 
@@ -77,12 +94,14 @@ final class FirebaseAuthWorker: AuthWorkerProtocol {
 
         guard newUsernameLower != oldUsernameLower else {
             try await firestore.collection("users").document(uid).updateData(["username": newUsername])
+            Log.response("AuthWorker.updateUsername succeeded (casing only) username=\(newUsername)")
             return AppUser(id: uid, username: newUsername, email: currentUser.email, photoURL: currentUser.photoURL)
         }
 
         do {
             let reserved = try await reserveUsername(newUsernameLower, for: uid)
             guard reserved else {
+                Log.response("AuthWorker.updateUsername failed: username \"\(newUsername)\" already taken")
                 throw WorkerError.usernameTaken
             }
 
@@ -92,16 +111,26 @@ final class FirebaseAuthWorker: AuthWorkerProtocol {
             ])
             try? await firestore.collection("usernames").document(oldUsernameLower).delete()
 
+            Log.response("AuthWorker.updateUsername succeeded username=\(newUsername)")
             return AppUser(id: uid, username: newUsername, email: currentUser.email, photoURL: currentUser.photoURL)
         } catch let error as WorkerError {
+            Log.response("AuthWorker.updateUsername failed: \(error.localizedDescription)")
             throw error
         } catch {
+            Log.response("AuthWorker.updateUsername failed: \(error.localizedDescription)")
             throw WorkerError.underlying(error.localizedDescription)
         }
     }
 
     func signOut() throws {
-        try Auth.auth().signOut()
+        Log.request("AuthWorker.signOut")
+        do {
+            try Auth.auth().signOut()
+            Log.response("AuthWorker.signOut succeeded")
+        } catch {
+            Log.response("AuthWorker.signOut failed: \(error.localizedDescription)")
+            throw error
+        }
     }
 
     /// Reserves `usernames/{usernameLower}` for `uid` if it isn't already taken.

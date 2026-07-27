@@ -54,4 +54,19 @@ enum SceneFactory {
 
         return viewController
     }
+
+    static func makeFriendsScene() -> FriendsViewController {
+        let viewController = FriendsViewController()
+        let interactor = FriendsInteractor()
+        let presenter = FriendsPresenter()
+        let router = FriendsRouter()
+
+        viewController.interactor = interactor
+        viewController.router = router
+        interactor.presenter = presenter
+        presenter.viewController = viewController
+        router.viewController = viewController
+
+        return viewController
+    }
 }
