@@ -108,8 +108,8 @@ final class SignUpViewController: BaseViewController, SignUpDisplayLogic {
         activityIndicator.startAnimating()
         registerButton.isEnabled = false
         interactor?.register(request: .init(
-            username: usernameField.text ?? "",
-            email: emailField.text ?? "",
+            username: (usernameField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
+            email: (emailField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
             password: passwordField.text ?? "",
             confirmPassword: confirmPasswordField.text ?? ""
         ))

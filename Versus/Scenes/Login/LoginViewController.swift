@@ -94,7 +94,7 @@ final class LoginViewController: BaseViewController, LoginDisplayLogic {
         activityIndicator.startAnimating()
         signInButton.isEnabled = false
         interactor?.signIn(request: .init(
-            email: emailField.text ?? "",
+            email: (emailField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
             password: passwordField.text ?? ""
         ))
     }

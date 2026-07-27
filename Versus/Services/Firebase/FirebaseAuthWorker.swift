@@ -17,30 +17,36 @@ final class FirebaseAuthWorker: AuthWorkerProtocol {
         let usernameLower = username.lowercased()
         let usernameRef = firestore.collection("usernames").document(usernameLower)
 
-        let isAvailable = (try? await firestore.runTransaction { transaction, errorPointer -> Any? in
-            let snapshot: DocumentSnapshot
-            do {
-                snapshot = try transaction.getDocument(usernameRef)
-            } catch {
-                errorPointer?.pointee = error as NSError
-                return false
-            }
-            if snapshot.exists {
-                return false
-            }
-            transaction.setData(["reservedAt": FieldValue.serverTimestamp()], forDocument: usernameRef)
-            return true
-        }) as? Bool ?? false
-
-        guard isAvailable else {
-            throw WorkerError.usernameTaken
+        // The username-uniqueness write requires an authenticated request (see firestore.rules),
+        // so the Firebase Auth account must exist — and be signed in — before it is reserved.
+        let uid: String
+        do {
+            uid = try await Auth.auth().createUser(withEmail: email, password: password).user.uid
+        } catch {
+            throw WorkerError.underlying(error.localizedDescription)
         }
 
         do {
-            let authResult = try await Auth.auth().createUser(withEmail: email, password: password)
-            let uid = authResult.user.uid
+            let reservationResult = try await firestore.runTransaction { transaction, errorPointer -> Any? in
+                let snapshot: DocumentSnapshot
+                do {
+                    snapshot = try transaction.getDocument(usernameRef)
+                } catch {
+                    errorPointer?.pointee = error as NSError
+                    return nil
+                }
+                if snapshot.exists {
+                    return false
+                }
+                transaction.setData(["userId": uid, "reservedAt": FieldValue.serverTimestamp()], forDocument: usernameRef)
+                return true
+            }
 
-            try await usernameRef.setData(["userId": uid], merge: true)
+            guard reservationResult as? Bool == true else {
+                try? await Auth.auth().currentUser?.delete()
+                throw WorkerError.usernameTaken
+            }
+
             try await firestore.collection("users").document(uid).setData([
                 "username": username,
                 "usernameLower": usernameLower,
@@ -49,8 +55,10 @@ final class FirebaseAuthWorker: AuthWorkerProtocol {
             ])
 
             return AppUser(id: uid, username: username, email: email, photoURL: nil)
+        } catch let error as WorkerError {
+            throw error
         } catch {
-            try? await usernameRef.delete()
+            try? await Auth.auth().currentUser?.delete()
             throw WorkerError.underlying(error.localizedDescription)
         }
     }
