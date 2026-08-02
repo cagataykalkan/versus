@@ -69,4 +69,83 @@ enum SceneFactory {
 
         return viewController
     }
+
+    static func makeTournamentListScene() -> TournamentListViewController {
+        let viewController = TournamentListViewController()
+        let interactor = TournamentListInteractor()
+        let presenter = TournamentListPresenter()
+        let router = TournamentListRouter()
+
+        viewController.interactor = interactor
+        viewController.router = router
+        interactor.presenter = presenter
+        presenter.viewController = viewController
+        router.viewController = viewController
+
+        return viewController
+    }
+
+    static func makeTournamentBasicsScene() -> TournamentBasicsViewController {
+        let draft = TournamentCreationDraft()
+        let viewController = TournamentBasicsViewController()
+        let interactor = TournamentBasicsInteractor(draft: draft)
+        let presenter = TournamentBasicsPresenter()
+        let router = TournamentBasicsRouter()
+
+        viewController.interactor = interactor
+        viewController.router = router
+        interactor.presenter = presenter
+        presenter.viewController = viewController
+        router.viewController = viewController
+        router.draft = draft
+
+        return viewController
+    }
+
+    static func makeTournamentTypeRulesScene(draft: TournamentCreationDraft) -> TournamentTypeRulesViewController {
+        let viewController = TournamentTypeRulesViewController()
+        let interactor = TournamentTypeRulesInteractor(draft: draft)
+        let presenter = TournamentTypeRulesPresenter()
+        let router = TournamentTypeRulesRouter()
+
+        viewController.interactor = interactor
+        viewController.router = router
+        interactor.presenter = presenter
+        presenter.viewController = viewController
+        router.viewController = viewController
+        router.draft = draft
+
+        return viewController
+    }
+
+    static func makeTournamentPlayersScene(draft: TournamentCreationDraft) -> TournamentPlayersViewController {
+        let viewController = TournamentPlayersViewController()
+        let interactor = TournamentPlayersInteractor(draft: draft)
+        let presenter = TournamentPlayersPresenter()
+        let router = TournamentPlayersRouter()
+
+        viewController.interactor = interactor
+        viewController.router = router
+        interactor.presenter = presenter
+        presenter.viewController = viewController
+        router.viewController = viewController
+        router.draft = draft
+
+        return viewController
+    }
+
+    static func makeTournamentReviewScene(draft: TournamentCreationDraft) -> TournamentReviewViewController {
+        let viewController = TournamentReviewViewController()
+        let interactor = TournamentReviewInteractor(draft: draft)
+        let presenter = TournamentReviewPresenter()
+        let router = TournamentReviewRouter()
+
+        viewController.interactor = interactor
+        viewController.router = router
+        interactor.presenter = presenter
+        presenter.viewController = viewController
+        router.viewController = viewController
+
+        return viewController
+    }
 }

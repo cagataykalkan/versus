@@ -26,9 +26,13 @@ final class MainTabBarController: UITabBarController {
         let friendsViewController = SceneFactory.makeFriendsScene()
         friendsViewController.tabBarItem = UITabBarItem(title: "Arkadaşlar", image: UIImage(systemName: "person.2"), tag: 1)
 
+        let tournamentListViewController = SceneFactory.makeTournamentListScene()
+        tournamentListViewController.tabBarItem = UITabBarItem(title: "Turnuvalar", image: UIImage(systemName: "trophy"), tag: 2)
+
         viewControllers = [
             UINavigationController(rootViewController: profileViewController),
-            UINavigationController(rootViewController: friendsViewController)
+            UINavigationController(rootViewController: friendsViewController),
+            UINavigationController(rootViewController: tournamentListViewController)
         ]
     }
 }
